@@ -23,10 +23,10 @@ func LoadConfig() *Config {
 	}
 
 	if cfg.DatabaseURL == "" {
-		log.Fatal("FATAL: DATABASE_URL tidak ditemukan")
+		log.Fatal("FATAL: DATABASE_URL not found")
 	}
 	if cfg.JWTSecret == "" {
-		log.Fatal("FATAL: JWT_SECRET tidak ditemukan")
+		log.Fatal("FATAL: JWT_SECRET not found")
 	}
 
 	if cfg.AppPort == "" {

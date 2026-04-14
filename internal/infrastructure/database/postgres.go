@@ -15,7 +15,7 @@ func NewPostgresConn(cfg *config.Config, l *zap.Logger) *bun.DB {
 	db := bun.NewDB(sqldb, pgdialect.New())
 
 	if err := db.Ping(); err != nil {
-		l.Fatal("Gagal koneksi ke database", zap.Error(err))
+		l.Fatal("Failed to connect to the database", zap.Error(err))
 	}
 
 	l.Info("Database connection initialized successfully")

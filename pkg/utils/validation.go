@@ -12,7 +12,7 @@ func FormatValidationError(err error) map[string]string {
 	var ve validator.ValidationErrors
 	if errors.As(err, &ve) {
 		for _, e := range ve {
-			errMessages[e.Field()] = "Kolom ini tidak memenuhi syarat: " + e.Tag()
+			errMessages[e.Field()] = "This column does not meet the requirements: " + e.Tag()
 		}
 	} else {
 		errMessages["general"] = err.Error()

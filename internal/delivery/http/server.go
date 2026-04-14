@@ -14,11 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewGinServer(lc fx.Lifecycle, cfg *config.Config, log *zap.Logger, userHandler *handler.UserHandler) *gin.Engine {
+func NewGinServer(lc fx.Lifecycle, cfg *config.Config, log *zap.Logger, userHandler *handler.UserHandler, productHandler *handler.ProductHandler, transHandler *handler.TransactionHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(middleware.ZapLogger(log))
-	SetupRoutes(r, userHandler)
+	SetupRoutes(r, cfg, userHandler, productHandler, transHandler)
 
 	addr := fmt.Sprintf(":%s", cfg.AppPort)
 
@@ -33,13 +33,13 @@ func NewGinServer(lc fx.Lifecycle, cfg *config.Config, log *zap.Logger, userHand
 
 			go func() {
 				if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					log.Fatal("HTTP server gagal berjalan", zap.Error(err))
+					log.Fatal("The HTTP server failed to start", zap.Error(err))
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Info("Menerima sinyal mati. Menghentikan HTTP server secara Graceful...")
+			log.Info("Receiving a shutdown signal. Performing a controlled shutdown of the HTTP server...")
 			return srv.Shutdown(ctx)
 		},
 	})

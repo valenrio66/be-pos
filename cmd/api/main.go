@@ -24,9 +24,23 @@ func main() {
 				postgres.NewUserRepository,
 				fx.As(new(domain.UserRepository)),
 			),
-
 			usecase.NewUserUsecase,
 			handler.NewUserHandler,
+
+			fx.Annotate(
+				postgres.NewProductRepository,
+				fx.As(new(domain.ProductRepository)),
+			),
+			usecase.NewProductUsecase,
+			handler.NewProductHandler,
+
+			fx.Annotate(
+				postgres.NewTransactionRepository,
+				fx.As(new(domain.TransactionRepository)),
+			),
+			usecase.NewTransactionUsecase,
+			handler.NewTransactionHandler,
+
 			http.NewGinServer,
 		),
 		fx.Invoke(func(r *gin.Engine) {}),
