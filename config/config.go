@@ -30,7 +30,7 @@ func LoadConfig() *Config {
 	}
 
 	if cfg.AppPort == "" {
-		cfg.AppPort = "8080"
+		cfg.AppPort = "8081"
 	}
 
 	return cfg

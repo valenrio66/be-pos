@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  api:
+    build: .  # Build from Dockerfile in this directory
+    container_name: be-pos-api
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    env_file:
+      .env
+    environment:
+      # IMPORTANT: The host is not ‘localhost’, but the name of the db service, which is ‘postgres’
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@be-project-db:5432/${DB_NAME}?sslmode=disable
+      - SERVER_ADDRESS=0.0.0.0:${SERVER_PORT}
+      # Other environments can be taken from the .env file or hardcoded here.
+    restart: always
+    networks:
+      - be-project_default
+
+networks:
+  be-project_default:
+    external: true
