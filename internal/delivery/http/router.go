@@ -46,5 +46,12 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config, userHandler *handler.UserHan
 		{
 			pos.POST("/checkout", transHandler.Checkout)
 		}
+
+		reports := v1.Group("/reports")
+		reports.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+		reports.Use(middleware.RequireRole("admin"))
+		{
+			reports.GET("/daily-summary", transHandler.GetTodayDashboardSummary)
+		}
 	}
 }

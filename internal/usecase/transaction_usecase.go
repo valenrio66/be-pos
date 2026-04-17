@@ -24,7 +24,6 @@ func NewTransactionUsecase(db *bun.DB, transRepo domain.TransactionRepository, p
 }
 
 func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID int64, items []domain.TransactionDetail) (*domain.Transaction, error) {
-
 	tx, err := u.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start database transaction")
@@ -87,4 +86,20 @@ func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID in
 	}
 
 	return newTrans, nil
+}
+
+func (u *TransactionUsecase) GetTodaySummary(ctx context.Context) (*domain.DailySummary, error) {
+	now := time.Now()
+
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
+
+	summary, err := u.transRepo.GetDailySummary(ctx, startOfDay, endOfDay)
+	if err != nil {
+		u.log.Error("Failed to fetch daily summary", zap.Error(err))
+		return nil, fmt.Errorf("failed to retrieve dashboard summary")
+	}
+
+	return summary, nil
 }

@@ -31,9 +31,15 @@ type TransactionDetail struct {
 	Subtotal      float64 `bun:"subtotal,notnull"`
 }
 
+type DailySummary struct {
+	TotalTransactions int     `bun:"total_transactions"`
+	TotalRevenue      float64 `bun:"total_revenue"`
+}
+
 type TransactionRepository interface {
 	CreateWithTx(ctx context.Context, tx bun.Tx, trans *Transaction) error
 	CreateDetailWithTx(ctx context.Context, tx bun.Tx, detail *TransactionDetail) error
 	FindAll(ctx context.Context) ([]Transaction, error)
 	FindByID(ctx context.Context, id int64) (*Transaction, error)
+	GetDailySummary(ctx context.Context, startOfDay, endOfDay time.Time) (*DailySummary, error)
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/valenrio66/be-pos/internal/delivery/http/dto"
@@ -51,4 +52,20 @@ func (h *TransactionHandler) Checkout(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusCreated, "Transaction completed successfully", resp)
+}
+
+func (h *TransactionHandler) GetTodayDashboardSummary(c *gin.Context) {
+	summary, err := h.usecase.GetTodaySummary(c.Request.Context())
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "Failed to load dashboard data", err.Error())
+		return
+	}
+
+	resp := dto.DashboardSummaryResponse{
+		Date:              time.Now().Format("2006-01-02"),
+		TotalTransactions: summary.TotalTransactions,
+		TotalRevenue:      summary.TotalRevenue,
+	}
+
+	response.Success(c, http.StatusOK, "Dashboard summary retrieved successfully", resp)
 }

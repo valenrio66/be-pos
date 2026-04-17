@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/uptrace/bun"
 	"github.com/valenrio66/be-pos/internal/domain"
@@ -35,4 +36,22 @@ func (r *transactionRepositoryImpl) FindByID(ctx context.Context, id int64) (*do
 	trans := new(domain.Transaction)
 	err := r.db.NewSelect().Model(trans).Relation("Items").Where("t.id = ?", id).Scan(ctx)
 	return trans, err
+}
+
+func (r *transactionRepositoryImpl) GetDailySummary(ctx context.Context, startOfDay, endOfDay time.Time) (*domain.DailySummary, error) {
+	summary := new(domain.DailySummary)
+
+	err := r.db.NewSelect().
+		Model((*domain.Transaction)(nil)).
+		ColumnExpr("COUNT(id) AS total_transactions").
+		ColumnExpr("COALESCE(SUM(total_price), 0) AS total_revenue").
+		Where("created_at >= ?", startOfDay).
+		Where("created_at <= ?", endOfDay).
+		Scan(ctx, summary)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return summary, nil
 }

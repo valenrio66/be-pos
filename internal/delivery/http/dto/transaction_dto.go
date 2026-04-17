@@ -24,3 +24,9 @@ type TransactionResponse struct {
 	CreatedAt     string                    `json:"created_at"`
 	Items         []TransactionItemResponse `json:"items,omitempty"`
 }
+
+type DashboardSummaryResponse struct {
+	Date              string  `json:"date"`
+	TotalTransactions int     `json:"total_transactions"`
+	TotalRevenue      float64 `json:"total_revenue"`
+}
