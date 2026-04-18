@@ -13,6 +13,8 @@ type Transaction struct {
 	ID            int64     `bun:"id,pk,autoincrement"`
 	TransactionNo string    `bun:"transaction_no,unique,notnull"`
 	TotalPrice    float64   `bun:"total_price,notnull"`
+	PaidAmount    float64   `bun:"paid_amount,notnull"`
+	ChangeAmount  float64   `bun:"change_amount,notnull"`
 	CashierID     int64     `bun:"cashier_id,notnull"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
 
@@ -34,6 +36,11 @@ type TransactionDetail struct {
 type DailySummary struct {
 	TotalTransactions int     `bun:"total_transactions"`
 	TotalRevenue      float64 `bun:"total_revenue"`
+}
+
+type TransactionInquiry struct {
+	TotalPrice float64             `json:"total_price"`
+	Items      []TransactionDetail `json:"items"`
 }
 
 type TransactionRepository interface {

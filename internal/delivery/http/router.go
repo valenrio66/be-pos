@@ -44,6 +44,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config, userHandler *handler.UserHan
 		pos.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 		pos.Use(middleware.RequireRole("admin", "cashier"))
 		{
+			pos.POST("/inquiry", transHandler.Inquiry)
 			pos.POST("/checkout", transHandler.Checkout)
 		}
 

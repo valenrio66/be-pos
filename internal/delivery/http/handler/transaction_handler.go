@@ -20,8 +20,47 @@ func NewTransactionHandler(usecase *usecase.TransactionUsecase) *TransactionHand
 	return &TransactionHandler{usecase: usecase}
 }
 
+func (h *TransactionHandler) Inquiry(c *gin.Context) {
+	var req dto.InquiryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "Invalid input data", utils.FormatValidationError(err))
+		return
+	}
+
+	var domainItems []domain.TransactionDetail
+	for _, item := range req.Items {
+		domainItems = append(domainItems, domain.TransactionDetail{
+			ProductID: item.ProductID,
+			Qty:       item.Qty,
+		})
+	}
+
+	res, err := h.usecase.Inquiry(c.Request.Context(), domainItems)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "Inquiry failed", err.Error())
+		return
+	}
+
+	var itemResponses []dto.TransactionItemResponse
+	for _, item := range res.Items {
+		itemResponses = append(itemResponses, dto.TransactionItemResponse{
+			ProductID:  item.ProductID,
+			Qty:        item.Qty,
+			PriceAtBuy: item.PriceAtBuy,
+			Subtotal:   item.Subtotal,
+		})
+	}
+
+	resp := dto.InquiryResponse{
+		TotalPrice: res.TotalPrice,
+		Items:      itemResponses,
+	}
+
+	response.Success(c, http.StatusOK, "Inquiry calculated successfully", resp)
+}
+
 func (h *TransactionHandler) Checkout(c *gin.Context) {
-	var req dto.CreateTransactionRequest
+	var req dto.CheckoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "Invalid input data", utils.FormatValidationError(err))
 		return
@@ -37,9 +76,9 @@ func (h *TransactionHandler) Checkout(c *gin.Context) {
 		})
 	}
 
-	res, err := h.usecase.CreateTransaction(c.Request.Context(), cashierID, domainItems)
+	res, err := h.usecase.CreateTransaction(c.Request.Context(), cashierID, req.PaidAmount, domainItems)
 	if err != nil {
-		response.Error(c, http.StatusInternalServerError, "Transaction failed", err.Error())
+		response.Error(c, http.StatusBadRequest, "Transaction failed", err.Error())
 		return
 	}
 

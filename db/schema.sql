@@ -1,4 +1,4 @@
-\restrict eCitd1GaryYHMTgyTYXMmMyz3iXvfSYTKQDFFslkDktudAAo7nMEqClymb8TrUU
+\restrict 1riRIbznuYooOSxypryAw03QBY5GstaMciaKyV3ZaFgVPEEws7hwSY8fi280Wzb
 
 -- Dumped from database version 16.12
 -- Dumped by pg_dump version 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1)
@@ -137,7 +137,9 @@ CREATE TABLE public.transactions (
     transaction_no character varying(50) NOT NULL,
     total_price numeric(15,2) NOT NULL,
     cashier_id bigint NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    paid_amount numeric(15,2) DEFAULT 0 NOT NULL,
+    change_amount numeric(15,2) DEFAULT 0 NOT NULL
 );
 
 
@@ -352,7 +354,7 @@ ALTER TABLE ONLY public.transactions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict eCitd1GaryYHMTgyTYXMmMyz3iXvfSYTKQDFFslkDktudAAo7nMEqClymb8TrUU
+\unrestrict 1riRIbznuYooOSxypryAw03QBY5GstaMciaKyV3ZaFgVPEEws7hwSY8fi280Wzb
 
 
 --
@@ -364,4 +366,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20260414160258'),
     ('20260414172126'),
     ('20260414174525'),
-    ('20260414174624');
+    ('20260414174624'),
+    ('20260418101138');

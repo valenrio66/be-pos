@@ -1,12 +1,17 @@
 package dto
 
+type InquiryRequest struct {
+	Items []TransactionItemRequest `json:"items" binding:"required,min=1"`
+}
+
+type CheckoutRequest struct {
+	PaidAmount float64                  `json:"paid_amount" binding:"required,gt=0"`
+	Items      []TransactionItemRequest `json:"items" binding:"required,min=1"`
+}
+
 type TransactionItemRequest struct {
 	ProductID int64 `json:"product_id" binding:"required"`
 	Qty       int   `json:"qty" binding:"required,gt=0"`
-}
-
-type CreateTransactionRequest struct {
-	Items []TransactionItemRequest `json:"items" binding:"required,min=1"`
 }
 
 type TransactionItemResponse struct {
@@ -14,6 +19,11 @@ type TransactionItemResponse struct {
 	Qty        int     `json:"qty"`
 	PriceAtBuy float64 `json:"price_at_buy"`
 	Subtotal   float64 `json:"subtotal"`
+}
+
+type InquiryResponse struct {
+	TotalPrice float64                   `json:"total_price"`
+	Items      []TransactionItemResponse `json:"items"`
 }
 
 type TransactionResponse struct {

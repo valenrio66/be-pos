@@ -23,11 +23,12 @@ func NewTransactionUsecase(db *bun.DB, transRepo domain.TransactionRepository, p
 	return &TransactionUsecase{db: db, transRepo: transRepo, productRepo: productRepo, log: log}
 }
 
-func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID int64, items []domain.TransactionDetail) (*domain.Transaction, error) {
+func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID int64, paidAmount float64, items []domain.TransactionDetail) (*domain.Transaction, error) {
 	tx, err := u.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start database transaction")
 	}
+
 	defer func() {
 		errRollback := tx.Rollback()
 		if errRollback != nil && !errors.Is(errRollback, sql.ErrTxDone) {
@@ -42,6 +43,8 @@ func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID in
 		TransactionNo: transactionNo,
 		CashierID:     cashierID,
 		TotalPrice:    0,
+		PaidAmount:    paidAmount,
+		ChangeAmount:  0,
 	}
 
 	if err := u.transRepo.CreateWithTx(ctx, tx, newTrans); err != nil {
@@ -75,7 +78,15 @@ func (u *TransactionUsecase) CreateTransaction(ctx context.Context, cashierID in
 		}
 	}
 
+	if paidAmount < totalPrice {
+		return nil, fmt.Errorf("insufficient payment: total is %.2f but paid amount is %.2f", totalPrice, paidAmount)
+	}
+
+	changeAmount := paidAmount - totalPrice
+
 	newTrans.TotalPrice = totalPrice
+	newTrans.ChangeAmount = changeAmount
+
 	_, err = tx.NewUpdate().Model(newTrans).WherePK().Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to finalize transaction total")
@@ -102,4 +113,35 @@ func (u *TransactionUsecase) GetTodaySummary(ctx context.Context) (*domain.Daily
 	}
 
 	return summary, nil
+}
+
+func (u *TransactionUsecase) Inquiry(ctx context.Context, items []domain.TransactionDetail) (*domain.TransactionInquiry, error) {
+	var totalPrice float64
+	var detailedItems []domain.TransactionDetail
+
+	for _, item := range items {
+		product, err := u.productRepo.FindByID(ctx, item.ProductID)
+		if err != nil {
+			return nil, fmt.Errorf("product with ID %d not found", item.ProductID)
+		}
+
+		if product.Stock < item.Qty {
+			return nil, fmt.Errorf("insufficient stock for product: %s", product.Name)
+		}
+
+		subtotal := product.Price * float64(item.Qty)
+		totalPrice += subtotal
+
+		detailedItems = append(detailedItems, domain.TransactionDetail{
+			ProductID:  product.ID,
+			Qty:        item.Qty,
+			PriceAtBuy: product.Price,
+			Subtotal:   subtotal,
+		})
+	}
+
+	return &domain.TransactionInquiry{
+		TotalPrice: totalPrice,
+		Items:      detailedItems,
+	}, nil
 }
